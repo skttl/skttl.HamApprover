@@ -1,0 +1,27 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : 24. oktober 2017 08:32:28
+   Source : C:\Workspaces\UmbracoPackages\skttl.HamApprover\src\skttl.HamApprover\bin\
+     Dest : C:\Workspaces\UmbracoPackages\skttl.HamApprover\src\skttl.HamApprover\App_Data\NuGetBackup\20171024-083227\bin\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /R:1000000 /W:30 
+
+------------------------------------------------------------------------------
+
+	                   0	C:\Workspaces\UmbracoPackages\skttl.HamApprover\src\skttl.HamApprover\bin\
+	  New Dir          0	C:\Workspaces\UmbracoPackages\skttl.HamApprover\src\skttl.HamApprover\bin\Debug\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         1         1         0         0         0
+   Files :         0         0         0         0         0         0
+   Bytes :         0         0         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+   Ended : 24. oktober 2017 08:32:28
+

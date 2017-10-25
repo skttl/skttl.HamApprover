@@ -1,0 +1,17 @@
+@font-face {
+	font-family: 'HamApprover';
+	src: url('/App_Plugins/skttl.HamApprover/HamApprover.eot');
+	src: url('/App_Plugins/skttl.HamApprover/HamApprover.eot?#iefix') format('embedded-opentype'), url('/App_Plugins/skttl.HamApprover/HamApprover.woff') format('woff'), url('/App_Plugins/skttl.HamApprover/HamApprover.ttf') format('truetype'), url('/App_Plugins/skttl.HamApprover/HamApprover.svg#Glyphter') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+.icon-hamapprover:before {
+	display: inline-block;
+	font-family: 'HamApprover';
+	font-style: normal;
+	font-weight: normal;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	content:'\0061';
+}
