@@ -1,29 +1,26 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Umbraco.Core.Logging;
+
+using Umbraco.Core.Composing;
 using Umbraco.Forms.Core;
 using Umbraco.Forms.Core.Attributes;
 using Umbraco.Forms.Core.Enums;
-using Umbraco.Forms.Data.Storage;
-using Umbraco.Forms.Web.Services;
-using Umbraco.Web;
+using Umbraco.Forms.Core.Persistence.Dtos;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace skttl.HamApprover
 {
 	public class HamApprover : WorkflowType
 	{
-		[Setting("Submission settings", view = "../../../../../umbraco/views/propertyeditors/readonlyvalue/readonlyvalue")]
+		[Setting("Submission settings", View = "../../../../../umbraco/views/propertyeditors/readonlyvalue/readonlyvalue")]
 		public string SubmissionLabel { get; set; }
 
-		[Setting("Comment fields", description = "Add the alias(es) of the field(s) to test for spam, seperated by comma. If no aliases added, the test will use a concatenation of all fields.", view = "TextField")]
+		[Setting("Comment fields", Description = "Add the alias(es) of the field(s) to test for spam, seperated by comma. If no aliases added, the test will use a concatenation of all fields.", View = "TextField")]
 		public string CommentFieldsInput { get; set; }
 		public string[] CommentFields
 		{
@@ -33,22 +30,22 @@ namespace skttl.HamApprover
 			}
 		}
 
-		[Setting("Author name field", description = "Optional - The alias of the field containg the authors name.", view = "TextField")]
+		[Setting("Author name field", Description = "Optional - The alias of the field containg the authors name.", View = "TextField")]
 		public string AuthorField { get; set; }
 
-		[Setting("Email field", description = "Optional - The alias of the field containg the authors email.", view = "TextField")]
+		[Setting("Email field", Description = "Optional - The alias of the field containg the authors email.", View = "TextField")]
 		public string EmailField { get; set; }
 
-		[Setting("Link field", description = "Optional - The alias of the field containg the authors url.", view = "TextField")]
+		[Setting("Link field", Description = "Optional - The alias of the field containg the authors url.", View = "TextField")]
 		public string LinkField { get; set; }
 
-		[Setting("Subject field", description = "Optional - The alias of the field containg the subject of the submission.", view = "TextField")]
+		[Setting("Subject field", Description = "Optional - The alias of the field containg the subject of the submission.", View = "TextField")]
 		public string SubjectField { get; set; }
 
-		[Setting("Approver settings", view = "../../../../../umbraco/views/propertyeditors/readonlyvalue/readonlyvalue")]
+		[Setting("Approver settings", View = "../../../../../umbraco/views/propertyeditors/readonlyvalue/readonlyvalue")]
 		public string ApproverLabel { get; set; }
 
-		[Setting("Server", description = "The server to test the submission against. Default is http://test.blogspam.net:9999/", view = "TextField")]
+		[Setting("Server", Description = "The server to test the submission against. Default is http://test.blogspam.net:9999/", View = "TextField")]
 		public string ServerInput { get; set; }
 		public string Server
 		{
@@ -58,7 +55,7 @@ namespace skttl.HamApprover
 			}
 		}
 
-		[Setting("IP Blacklist", description = "Submissions from these IPs (seperated by comma) will always be denied", view = "TextField")]
+		[Setting("IP Blacklist", Description = "Submissions from these IPs (seperated by comma) will always be denied", View = "TextField")]
 		public string BlacklistInput { get; set; }
 		public string[] Blacklist
 		{
@@ -68,7 +65,7 @@ namespace skttl.HamApprover
 			}
 		}
 
-		[Setting("IP Whitelist", description = "Submissions from these IPs (seperated by comma) will always be approved", view = "TextField")]
+		[Setting("IP Whitelist", Description = "Submissions from these IPs (seperated by comma) will always be approved", View = "TextField")]
 		public string WhitelistInput { get; set; }
 		public string[] Whitelist
 		{
@@ -78,7 +75,7 @@ namespace skttl.HamApprover
 			}
 		}
 
-		[Setting("Max links", description = "The maximum number of links allowed in the submission. Default is 10", view = "TextField")]
+		[Setting("Max links", Description = "The maximum number of links allowed in the submission. Default is 10", View = "TextField")]
 		public string MaxLinksInput { get; set; }
 		public int MaxLinks
 		{
@@ -90,7 +87,7 @@ namespace skttl.HamApprover
 			}
 		}
 
-		[Setting("Max length", description = "The maximum number of characters allowed in the submission.", view = "TextField")]
+		[Setting("Max length", Description = "The maximum number of characters allowed in the submission.", View = "TextField")]
 		public string MaxLengthInput { get; set; }
 		public int MaxLength
 		{
@@ -102,7 +99,7 @@ namespace skttl.HamApprover
 			}
 		}
 
-		[Setting("Min length", description = "The minimum number of characters required in the submission.", view = "TextField")]
+		[Setting("Min length", Description = "The minimum number of characters required in the submission.", View = "TextField")]
 		public string MinLengthInput { get; set; }
 		public int MinLength
 		{
@@ -114,7 +111,7 @@ namespace skttl.HamApprover
 			}
 		}
 
-		[Setting("Min words", description = "The minimum number of words required in the submission.", view = "TextField")]
+		[Setting("Min words", Description = "The minimum number of words required in the submission.", View = "TextField")]
 		public string MinWordsInput { get; set; }
 		public int MinWords
 		{
@@ -234,20 +231,19 @@ namespace skttl.HamApprover
 					try
 					{
 						if (result.result == "OK")
-						{
-							RecordService.Instance.Approve(record, e.Form);
-							
-							LogHelper.Info(typeof(HamApprover), "Submission completed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{","{{").Replace("}","}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
+                        {
+                            record.State = FormState.Approved;
+                            Current.Logger.Info(typeof(HamApprover), "Submission completed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{","{{").Replace("}","}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
 							
 						}
 						else
 						{
-							LogHelper.Info(typeof(HamApprover), "Submission failed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
+                            Current.Logger.Info(typeof(HamApprover), "Submission failed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
 						}
 					}
 					catch (Exception ex)
 					{
-						LogHelper.Error(typeof(HamApprover), "Failed testing submission." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}"), ex);
+                        Current.Logger.Error(typeof(HamApprover), "Failed testing submission." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}"), ex);
 					}
 					
 
@@ -258,13 +254,13 @@ namespace skttl.HamApprover
 
 			catch (Exception ex)
 			{
-				LogHelper.Error(typeof(HamApprover), "Failed testing submission.", ex);
+                Current.Logger.Error(typeof(HamApprover), "Failed testing submission.", ex);
 				return WorkflowExecutionStatus.Completed;
 			}
 
 		}
 
-		public override List<Exception> ValidateSettings()
+        public override List<Exception> ValidateSettings()
 		{
 			return new List<Exception>();
 		}
