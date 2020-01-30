@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using Umbraco.Core.Composing;
-using Umbraco.Forms.Core;
-using Umbraco.Forms.Core.Attributes;
-using Umbraco.Forms.Core.Enums;
-using Umbraco.Forms.Core.Persistence.Dtos;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Polly;
-
+﻿
 namespace skttl.HamApprover
 {
+	using Newtonsoft.Json;
+	using Polly;
+	using RestSharp;
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Net;
+	using Umbraco.Core;
+	using Umbraco.Core.Composing;
+	using Umbraco.Core.Logging;
+	using Umbraco.Forms.Core;
+	using Umbraco.Forms.Core.Attributes;
+	using Umbraco.Forms.Core.Enums;
+	using Umbraco.Forms.Core.Persistence.Dtos;
+
 	public class HamApprover : WorkflowType
 	{
 		[Setting("Submission settings", View = "../../../../../umbraco/views/propertyeditors/readonlyvalue/readonlyvalue")]
@@ -23,9 +23,12 @@ namespace skttl.HamApprover
 
 		[Setting("Comment fields", Description = "Add the alias(es) of the field(s) to test for spam, seperated by comma. If no aliases added, the test will use a concatenation of all fields.", View = "TextField")]
 		public string CommentFieldsInput { get; set; }
+
 		public string[] CommentFields => CommentFieldsInput.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
-        //[Setting("Author name field", Description = "Optional - The alias of the field containg the authors name.", View = "TextField")]
+		#region Commented Out Properties
+
+		//[Setting("Author name field", Description = "Optional - The alias of the field containg the authors name.", View = "TextField")]
 		//public string AuthorField { get; set; }
 
 		//[Setting("Email field", Description = "Optional - The alias of the field containg the authors email.", View = "TextField")]
@@ -118,9 +121,13 @@ namespace skttl.HamApprover
 		//	}
 		//}
 
+		#endregion
 
-		public HamApprover()
+		private readonly ILogger Logger;
+
+		public HamApprover(ILogger logger)
 		{
+			this.Logger = logger;
 			this.Name = "Ham Approver";
 			this.Id = new Guid("D90EE979-80C5-4AC8-BFEE-28F4DE47C857");
 			this.Description = "Approves the submission, after testing if it is spam.";
@@ -131,13 +138,57 @@ namespace skttl.HamApprover
 		{
 			try
 			{
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://plino.herokuapp.com/api/v1/classify/");
-				httpWebRequest.ContentType = "application/json";
-				httpWebRequest.Method = "POST";
+				//get fields to check from Umbraco Forms
+				var textToCheck = string.Join(Environment.NewLine, record.RecordFields.Where(x => this.CommentFields.Length == 0 || this.CommentFields.Contains(x.Value.Alias)).Select(x => x.Value.ValuesAsString()));
 
-				var request = new JObject();
+				//set up client
+				var client = new RestClient("https://plino.herokuapp.com/api/v1/");
 
-				request["email_text"] = string.Join(Environment.NewLine, record.RecordFields.Where(x => CommentFields.Length == 0 || CommentFields.Contains(x.Value.Alias)).Select(x => x.Value.ValuesAsString()));
+				//set up request
+				var request = new RestRequest
+				{
+					RequestFormat = DataFormat.Json,
+					Resource = "classify/",
+					Method = Method.POST
+				};
+
+				//add model to body
+				request.AddJsonBody(new
+				{
+					email_text = textToCheck
+				});
+
+				//set serialization handling
+				request.OnBeforeDeserialization += this.OnBeforeDeserialization;
+
+				//call api - using Polly with retry 
+				var totalRetry = 5;
+				var response = this.ExecuteWithPolicy<HamResponse>(client, request, this.GetRestResponsePollyPolicy(totalRetry));
+
+				var result = response.Data;
+
+				try
+				{
+					if (result.EmailClass.InvariantEquals("ham"))
+					{
+						record.State = FormState.Approved;
+						this.Logger.Info(typeof(HamApprover), $"Submission completed ham approval. Request: {this.CleanData(textToCheck)} Response: {this.CleanData(result)}");
+					}
+					else
+					{
+						this.Logger.Info(typeof(HamApprover), $"Submission failed ham approval. Request: {this.CleanData(textToCheck)} Response: {this.CleanData(result)}");
+					}
+				}
+				catch (Exception ex)
+				{
+					this.Logger.Error(typeof(HamApprover), $"Failed testing submission. Request: {this.CleanData(textToCheck)}", ex);
+				}
+
+				return WorkflowExecutionStatus.Completed;
+
+
+				#region Commented Out Codes
+
 				//request["ip"] = record.IP;
 
 				//if (!string.IsNullOrEmpty(EmailField))
@@ -175,7 +226,7 @@ namespace skttl.HamApprover
 				//		request["subject"] = field.First().Value.ValuesAsString();
 				//	}
 				//}
-				
+
 				//request["site"] = "http://test.dk";
 
 				//var options = new List<string>();
@@ -207,55 +258,103 @@ namespace skttl.HamApprover
 				//	request["options"] = string.Join(",", options);
 				//}
 
-				using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-				{
-					string json = JsonConvert.SerializeObject(request);
 
-					streamWriter.Write(json);
-					streamWriter.Flush();
-					streamWriter.Close();
-				}
+				//using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+				//{
+				//	string json = JsonConvert.SerializeObject(request);
 
-				var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-				using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-				{
-					var result = JsonConvert.DeserializeObject<dynamic>(streamReader.ReadToEnd());
+				//	streamWriter.Write(json);
+				//	streamWriter.Flush();
+				//	streamWriter.Close();
+				//}
 
-                    try
-					{
-						if (result.email_class == "ham")
-                        {
-                            record.State = FormState.Approved;
-                            Current.Logger.Info(typeof(HamApprover), "Submission completed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{","{{").Replace("}","}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
-							
-						}
-						else
-						{
-                            Current.Logger.Info(typeof(HamApprover), "Submission failed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
-						}
-					}
-					catch (Exception ex)
-					{
-                        Current.Logger.Error(typeof(HamApprover), "Failed testing submission." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}"), ex);
-					}
-					
+				//var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+				//using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+				//{
+				//	var result = JsonConvert.DeserializeObject<dynamic>(streamReader.ReadToEnd());
 
-					return WorkflowExecutionStatus.Completed;
-				}
+				//	try
+				//	{
+				//		if (result.email_class == "ham")
+				//		{
+				//			record.State = FormState.Approved;
+				//			Current.Logger.Info(typeof(HamApprover), "Submission completed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
 
+				//		}
+				//		else
+				//		{
+				//			Current.Logger.Info(typeof(HamApprover), "Submission failed ham approval." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}") + Environment.NewLine + "Response: " + JsonConvert.SerializeObject(result).Replace("{", "{{").Replace("}", "}}"));
+				//		}
+				//	}
+				//	catch (Exception ex)
+				//	{
+				//		Current.Logger.Error(typeof(HamApprover), "Failed testing submission." + Environment.NewLine + "Request: " + JsonConvert.SerializeObject(request).Replace("{", "{{").Replace("}", "}}"), ex);
+				//	}
+
+
+				//	return WorkflowExecutionStatus.Completed;
+				//}
+
+				#endregion
 			}
 
 			catch (Exception ex)
 			{
-                Current.Logger.Error(typeof(HamApprover), "Failed testing submission.", ex);
+				this.Logger.Error(typeof(HamApprover), "Failed testing submission.", ex);
 				return WorkflowExecutionStatus.Completed;
 			}
-
 		}
 
-        public override List<Exception> ValidateSettings()
+		public override List<Exception> ValidateSettings()
 		{
 			return new List<Exception>();
 		}
+
+		#region Private Methods
+
+		private string CleanData(object obj)
+		{
+			return JsonConvert.SerializeObject(obj).Replace("{", "{{").Replace("}", "}}");
+		}
+
+		private void OnBeforeDeserialization(IRestResponse restResponse)
+		{
+			restResponse.ContentType = "application/json";
+
+			if (restResponse.Content == "400")
+				restResponse.Content = null;
+		}
+
+		private Policy<IRestResponse> GetRestResponsePollyPolicy(int totalRetry)
+		{
+			return Policy.HandleResult<IRestResponse>(response =>
+			{
+				//logging the error if it's a timeout, just to see what's going on
+				if (response.StatusCode != HttpStatusCode.OK)
+				{
+					var message = $"Error retrieving response for '{response.ResponseUri.AbsoluteUri}'.  Check inner details for more info.";
+					var restException = new ApplicationException(message, response.ErrorException);
+					Current.Logger.Error<HamApprover>(message, restException);
+				}
+
+				//can use anything in the response to drive it, using gateway timeout 
+				return response.StatusCode == HttpStatusCode.GatewayTimeout;
+			})
+			.Retry(totalRetry);
+		}
+
+		private IRestResponse<T> ExecuteWithPolicy<T>(IRestClient client, IRestRequest request, Policy<IRestResponse> policy) where T : new()
+		{
+			// capture the exception so we can push it though the standard response flow.
+			var policyResult = policy.ExecuteAndCapture(() => client.Execute<T>(request));
+
+			return (IRestResponse<T>)(policyResult.Outcome == OutcomeType.Successful ? policyResult.Result : new RestResponse<T>
+			{
+				Request = request,
+				ErrorException = policyResult.FinalException
+			});
+		}
+
+		#endregion
 	}
 }
