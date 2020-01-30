@@ -1,5 +1,4 @@
-﻿
-namespace skttl.HamApprover
+﻿namespace skttl.HamApprover
 {
 	using Newtonsoft.Json;
 	using Polly;
@@ -21,7 +20,7 @@ namespace skttl.HamApprover
 		[Setting("Submission settings", View = "../../../../../umbraco/views/propertyeditors/readonlyvalue/readonlyvalue")]
 		public string SubmissionLabel { get; set; }
 
-		[Setting("Comment fields", Description = "Add the alias(es) of the field(s) to test for spam, seperated by comma. If no aliases added, the test will use a concatenation of all fields.", View = "TextField")]
+		[Setting("Comment fields", Description = "Add the alias(es) of the field(s) to test for spam, separated by comma. If no aliases added, the test will use a concatenation of all fields.", View = "TextField")]
 		public string CommentFieldsInput { get; set; }
 
 		public string[] CommentFields => CommentFieldsInput.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
