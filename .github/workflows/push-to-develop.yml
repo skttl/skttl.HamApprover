@@ -1,6 +1,9 @@
 name: Build and deploy to Myget
- 
-on: [push]
+
+on:
+  push:
+    branches:
+      - develop
   
 jobs:
   build:
@@ -25,3 +28,5 @@ jobs:
     
     - name: Push to Myget
       run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.MYGET_API_KEY }} -Source https://www.myget.org/F/umbraco-packages/
+    
+    
