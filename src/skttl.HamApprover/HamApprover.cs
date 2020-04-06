@@ -25,103 +25,6 @@
 
 		public string[] CommentFields => CommentFieldsInput.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
-		#region Commented Out Properties
-
-		//[Setting("Author name field", Description = "Optional - The alias of the field containg the authors name.", View = "TextField")]
-		//public string AuthorField { get; set; }
-
-		//[Setting("Email field", Description = "Optional - The alias of the field containg the authors email.", View = "TextField")]
-		//public string EmailField { get; set; }
-
-		//[Setting("Link field", Description = "Optional - The alias of the field containg the authors url.", View = "TextField")]
-		//public string LinkField { get; set; }
-
-		//[Setting("Subject field", Description = "Optional - The alias of the field containg the subject of the submission.", View = "TextField")]
-		//public string SubjectField { get; set; }
-
-		//[Setting("Approver settings", View = "../../../../../umbraco/views/propertyeditors/readonlyvalue/readonlyvalue")]
-		//public string ApproverLabel { get; set; }
-
-		//[Setting("Server", Description = "The server to test the submission against. Default is http://test.blogspam.net:9999/", View = "TextField")]
-		//public string ServerInput { get; set; }
-		//public string Server
-		//{
-		//	get
-		//	{
-		//		return string.IsNullOrEmpty(ServerInput) ? "https://plino.herokuapp.com/api/v1/classify/" : ServerInput;
-		//	}
-		//}
-
-		//[Setting("IP Blacklist", Description = "Submissions from these IPs (seperated by comma) will always be denied", View = "TextField")]
-		//public string BlacklistInput { get; set; }
-		//public string[] Blacklist
-		//{
-		//	get
-		//	{
-		//		return BlacklistInput.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-		//	}
-		//}
-
-		//[Setting("IP Whitelist", Description = "Submissions from these IPs (seperated by comma) will always be approved", View = "TextField")]
-		//public string WhitelistInput { get; set; }
-		//public string[] Whitelist
-		//{
-		//	get
-		//	{
-		//		return WhitelistInput.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-		//	}
-		//}
-
-		//[Setting("Max links", Description = "The maximum number of links allowed in the submission. Default is 10", View = "TextField")]
-		//public string MaxLinksInput { get; set; }
-		//public int MaxLinks
-		//{
-		//	get
-		//	{
-		//		var result = 0;
-		//		int.TryParse(MaxLinksInput, out result);
-		//		return string.IsNullOrEmpty(MaxLinksInput) ? 10 : result;
-		//	}
-		//}
-
-		//[Setting("Max length", Description = "The maximum number of characters allowed in the submission.", View = "TextField")]
-		//public string MaxLengthInput { get; set; }
-		//public int MaxLength
-		//{
-		//	get
-		//	{
-		//		var result = 0;
-		//		int.TryParse(MaxLengthInput, out result);
-		//		return result;
-		//	}
-		//}
-
-		//[Setting("Min length", Description = "The minimum number of characters required in the submission.", View = "TextField")]
-		//public string MinLengthInput { get; set; }
-		//public int MinLength
-		//{
-		//	get
-		//	{
-		//		var result = 0;
-		//		int.TryParse(MinLengthInput, out result);
-		//		return result;
-		//	}
-		//}
-
-		//[Setting("Min words", Description = "The minimum number of words required in the submission.", View = "TextField")]
-		//public string MinWordsInput { get; set; }
-		//public int MinWords
-		//{
-		//	get
-		//	{
-		//		var result = 0;
-		//		int.TryParse(MinWordsInput, out result);
-		//		return result;
-		//	}
-		//}
-
-		#endregion
-
 		private readonly ILogger Logger;
 
 		public HamApprover(ILogger logger)
@@ -160,7 +63,7 @@
 				//set serialization handling
 				request.OnBeforeDeserialization += this.OnBeforeDeserialization;
 
-				//call api - using Polly with retry 
+				//call api - using Polly with retry
 				var totalRetry = 5;
 				var response = this.ExecuteWithPolicy<HamResponse>(client, request, this.GetRestResponsePollyPolicy(totalRetry));
 
@@ -336,7 +239,7 @@
 					Current.Logger.Error<HamApprover>(message, restException);
 				}
 
-				//can use anything in the response to drive it, using gateway timeout 
+				//can use anything in the response to drive it, using gateway timeout
 				return response.StatusCode == HttpStatusCode.GatewayTimeout;
 			})
 			.Retry(totalRetry);
