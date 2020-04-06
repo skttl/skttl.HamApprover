@@ -9,7 +9,9 @@ jobs:
  
     steps:
     - name: Hello world
-      run: echo Hello world $GITHUB_RUN_NUMBER $GITHUB_RUN_ID {$GITHUB_RUN_NUMBER} ${GITHUB_RUN_NUMBER}
+      run: echo Hello world $RUN_NUMBER $GITHUB_RUN_NUMBER
+      env:
+        RUN_NUMBER: $GITHUB_RUN_NUMBER
       
 #    - uses: actions/checkout@v1
 #      name: Checkout Code
