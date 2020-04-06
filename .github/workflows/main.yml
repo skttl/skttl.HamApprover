@@ -21,5 +21,20 @@ jobs:
       run: nuget restore src/skttl.HamApprover.sln
  
     - name: Build and Publish Web App
-      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
+      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release
 
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: NuGet package
+        # Directory containing files to upload
+        path: bin\Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: Umbraco package
+        # Directory containing files to upload
+        path: bin
