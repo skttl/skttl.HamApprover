@@ -5,8 +5,15 @@
     <Version>2.0.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/skttl/skttl.HamApprover</PackageProjectUrl>
-    <PackageIconUrl>https://github.com/skttl/skttl.HamApprover/raw/7075e861c7669108972ab3912783b029eb260e93/ham.png</PackageIconUrl>
+    <PackageIconUrl></PackageIconUrl>
     <RepositoryUrl>https://github.com/skttl/skttl.HamApprover</RepositoryUrl>
+    <PackageIcon>ham.png</PackageIcon>
+    <Authors>Søren Kottal</Authors>
+    <Company>skttl</Company>
+    <Product>Ham Approver</Product>
+    <Description>Ham Approver is a workflow item for Umbraco Forms, that helps you eliminate SPAM submissions without sacrifizing UX. It runs each submission against Plino, to determine whether the submission is ham or spam.</Description>
+    <Copyright>2020 Søren Kottal</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +49,13 @@
     <PackageReference Include="RestSharp" Version="106.10.1" />
     <PackageReference Include="UmbracoCms.Core" Version="8.4.0" />
     <PackageReference Include="UmbracoForms.Core" Version="8.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\ham.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
