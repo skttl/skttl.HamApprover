@@ -1,4 +1,4 @@
-name: Build Web App
+name: Build and deploy to Myget
  
 on: [push]
   
@@ -7,10 +7,7 @@ jobs:
  
     runs-on: windows-latest
  
-    steps:
-    - name: Hello world
-      run: echo "Hello world ${{ github.sha }} ${{ env.GITHUB_RUN_NUMBER }}"
-      
+    steps:      
     - uses: actions/checkout@v1
       name: Checkout Code
      
@@ -26,5 +23,5 @@ jobs:
     - name: Build and Publish Web App
       run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-${{ github.run_number }}
     
-#    - name: Push to Myget
-#      run: nuget push src/skttl.HamApprover/bin/Release/*.nupkg $MYGET_API_KEY -Source https://api.nuget.org/v3/index.json
+    - name: Push to Myget
+      run: nuget push src/skttl.HamApprover/bin/Release/*.nupkg ${{ secrets.MYGET_API_KEY }} -Source https://www.myget.org/F/umbraco-packages/api/v2/package
