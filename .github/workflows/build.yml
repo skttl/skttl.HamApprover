@@ -39,3 +39,19 @@ jobs:
     - name: Push to NuGet
       run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }}
       if: github.ref == 'refs/heads/master' && github.action == 'release'
+      
+    - name: Upload NuGet package to release
+      if: github.action == 'release'
+      uses: yakuhzi/action-release@v1
+      with:
+        file: src\skttl.HamApprover\bin\Release\*.nupkg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Upload Umbraco package to release
+      if: github.action == 'release'
+      uses: yakuhzi/action-release@v1
+      with:
+        file: src\skttl.HamApprover\bin\*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
