@@ -1,7 +1,7 @@
 name: Build Web App
  
 on: [push]
- 
+  
 jobs:
   build:
  
@@ -12,7 +12,7 @@ jobs:
       name: Checkout Code
      
     - name: Setup MSBuild Path
-      uses: warrenbuckley/Setup-MSBuild@v1
+      uses: microsoft/setup-msbuild
        
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.2
@@ -21,7 +21,10 @@ jobs:
       run: nuget restore src/skttl.HamApprover.sln
  
     - name: Build and Publish Web App
-      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release
+      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:PackageVersion:$(Package.Version)$(Rev:.r)
+    
+#    - name: Push to Myget
+#      run: nuget push src/skttl.HamApprover/bin/Release/*.nupkg $MYGET_API_KEY -Source https://api.nuget.org/v3/index.json
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
@@ -30,11 +33,3 @@ jobs:
         name: NuGet package
         # Directory containing files to upload
         path: src/skttl.HamApprover/bin\Release
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        # Artifact name
-        name: Umbraco package
-        # Directory containing files to upload
-        path: src/skttl.HamApprover/bin
