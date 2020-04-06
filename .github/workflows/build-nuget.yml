@@ -1,6 +1,8 @@
 name: Build and deploy to NuGet
 
 on:
+  push:
+    branches: master
   release:
     types:
       - created
@@ -25,12 +27,13 @@ jobs:
     - name: Build Package for NuGet
       run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-${{ github.run_number }}
     
-    - name: Push to NuGet
-      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json -NoSymbols
-      continue-on-error: true
+#    - name: Push to NuGet
+#      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json -NoSymbols
+#      continue-on-error: true
       
-    - name: Update Release
-      uses: johnwbyrd/update-release@v1.0.0
+    - name: Upload To Github Release
+      uses: xresloader/upload-to-github-release@v1.1.2
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        files: .\src\skttl.HamApprover\bin\Release\*.nupkg .\src\skttl.HamApprover\bin\*.zip
+        # The files or file patterns to upload. You can upload multiple files by split them by semicolon. You can use the glob pattern to find the files.
+        file: src\skttl.HamApprover\bin\Release\*.nupkg;src\skttl.HamApprover\bin\*.zip
+        update_latest_release: true
