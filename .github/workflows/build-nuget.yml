@@ -33,4 +33,4 @@ jobs:
       uses: johnwbyrd/update-release@v1.0.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        files: src\skttl.HamApprover\bin\Release\*.nupkg src\skttl.HamApprover\bin\*.zip
+        files: .\src\skttl.HamApprover\bin\Release\*.nupkg .\src\skttl.HamApprover\bin\*.zip
