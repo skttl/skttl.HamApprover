@@ -9,7 +9,7 @@ jobs:
  
     steps:
     - name: Hello world
-      run: echo "Hello world ${{ github.sha }} ${{ GITHUB_SHA }} ${{ GITHUB_RUN_NUMBER }}"
+      run: echo "Hello world ${{ github.sha }} ${{ env.GITHUB_RUN_NUMBER }}"
       
 #    - uses: actions/checkout@v1
 #      name: Checkout Code
