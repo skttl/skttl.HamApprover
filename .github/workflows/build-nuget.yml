@@ -1,8 +1,6 @@
 name: Build and deploy to NuGet
 
 on:
-  push:
-    branches: master
   release:
     types:
       - created
