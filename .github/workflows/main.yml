@@ -21,7 +21,7 @@ jobs:
       run: nuget restore src/skttl.HamApprover.sln
  
     - name: Build and Publish Web App
-      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:PackageVersion:2.0.0-$GITHUB_RUN_NUMBER
+      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:PackageVersion:2.0.0-1
     
 #    - name: Push to Myget
 #      run: nuget push src/skttl.HamApprover/bin/Release/*.nupkg $MYGET_API_KEY -Source https://api.nuget.org/v3/index.json
