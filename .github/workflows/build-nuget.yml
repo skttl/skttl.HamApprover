@@ -27,7 +27,7 @@ jobs:
     - name: Restore NuGet Packages
       run: nuget restore src/skttl.HamApprover.sln
     - name: Build Package for NuGet
-      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:Version=${{ steps.get_version.outputs.VERSION }}
+      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release
     
     - name: Push to NuGet
       run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json -NoSymbols
