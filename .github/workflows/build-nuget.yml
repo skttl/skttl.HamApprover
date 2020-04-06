@@ -30,12 +30,19 @@ jobs:
 #    - name: Push to NuGet
 #      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json -NoSymbols
 #      continue-on-error: true
-      
+
+    - name: Upload assets to a Release
+      uses: AButler/upload-release-assets@v2.0
+      with:
+        # A glob of the files to upload
+        files: '**/*.nupkg;src/skttl.HamApprover/bin/*.zip'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    
     - name: Upload To Github Release
       uses: xresloader/upload-to-github-release@v1.1.2
       with:
         # The files or file patterns to upload. You can upload multiple files by split them by semicolon. You can use the glob pattern to find the files.
-        file: src\skttl.HamApprover\bin\Release\*.nupkg;src\skttl.HamApprover\bin\*.zip
+        file: ./src/skttl.HamApprover/bin/Release/*.nupkg;./src/skttl.HamApprover/bin/*.zip;**/*.nupkg
         update_latest_release: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
