@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.0.0-beta</VersionPrefix>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/skttl/skttl.HamApprover</PackageProjectUrl>
     <PackageIconUrl></PackageIconUrl>
