@@ -26,7 +26,8 @@ jobs:
       run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-${{ github.run_number }}
     
     - name: Push to NuGet
-      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json -NoSymbols
+      continue-on-error: true
       
     - name: Upload NuGet package to release
       uses: yakuhzi/action-release@v1
