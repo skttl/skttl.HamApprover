@@ -29,7 +29,7 @@ jobs:
         # Artifact name
         name: NuGet package
         # Directory containing files to upload
-        path: bin\Release
+        path: src/skttl.HamApprover/bin\Release
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
@@ -37,4 +37,4 @@ jobs:
         # Artifact name
         name: Umbraco package
         # Directory containing files to upload
-        path: bin
+        path: src/skttl.HamApprover/bin
