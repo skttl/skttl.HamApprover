@@ -1,7 +1,10 @@
 name: Build and deploy to Myget
 
 on:
-  [push, pull_request]
+  push:
+    branches: [master, develop]
+  pull_request:
+  release:
   
 jobs:
   build:
@@ -20,17 +23,13 @@ jobs:
      
     - name: Restore NuGet Packages
       run: nuget restore src/skttl.HamApprover.sln
-      
-    - name: Build Package
-      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release
-      if: github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master'
  
     - name: Build Package for MyGet
       run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-${{ github.run_number }}
       if: github.ref == 'refs/heads/develop'
     
     - name: Push to Myget
-      run: nuget push src/skttl.HamApprover/bin/Release/*.nupkg ${{ secrets.MYGET_API_KEY }} -Source https://www.myget.org/F/umbraco-packages/
+      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.MYGET_API_KEY }} -Source https://www.myget.org/F/umbraco-packages/
       if: github.ref == 'refs/heads/develop'
  
     - name: Build Package for NuGet
@@ -38,5 +37,5 @@ jobs:
       if: github.ref == 'refs/heads/master' && github.action == 'release'
     
     - name: Push to NuGet
-      run: nuget push src/skttl.HamApprover/bin/Release/*.nupkg ${{ secrets.NUGET_API_KEY }}
+      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }}
       if: github.ref == 'refs/heads/master' && github.action == 'release'
