@@ -33,7 +33,7 @@ jobs:
       if: github.ref == 'refs/heads/develop'
  
     - name: Build Package for NuGet
-      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release
+      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-${{ github.run_number }}
       if: github.ref == 'refs/heads/master' && github.action == 'release'
     
     - name: Push to NuGet
