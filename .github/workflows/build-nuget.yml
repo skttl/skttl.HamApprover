@@ -1,0 +1,43 @@
+name: Build and deploy to NuGet
+
+on:
+  release:
+    types:
+      - created
+  
+jobs:
+  build:
+ 
+    runs-on: windows-latest
+ 
+    steps:      
+    - uses: actions/checkout@v1
+      name: Checkout Code
+     
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.0.0
+       
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.2
+     
+    - name: Restore NuGet Packages
+      run: nuget restore src/skttl.HamApprover.sln
+    - name: Build Package for NuGet
+      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-${{ github.run_number }}
+    
+    - name: Push to NuGet
+      run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }}
+      
+    - name: Upload NuGet package to release
+      uses: yakuhzi/action-release@v1
+      with:
+        file: src\skttl.HamApprover\bin\Release\*.nupkg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Upload Umbraco package to release
+      uses: yakuhzi/action-release@v1
+      with:
+        file: src\skttl.HamApprover\bin\*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
