@@ -11,20 +11,20 @@ jobs:
     - name: Hello world
       run: echo "Hello world ${{ github.sha }} ${{ env.GITHUB_RUN_NUMBER }}"
       
-#    - uses: actions/checkout@v1
-#      name: Checkout Code
+    - uses: actions/checkout@v1
+      name: Checkout Code
      
-#    - name: Add msbuild to PATH
-#      uses: microsoft/setup-msbuild@v1.0.0
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.0.0
        
-#    - name: Setup NuGet
-#      uses: NuGet/setup-nuget@v1.0.2
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.2
      
-#    - name: Restore NuGet Packages
-#      run: nuget restore src/skttl.HamApprover.sln
+    - name: Restore NuGet Packages
+      run: nuget restore src/skttl.HamApprover.sln
  
-#    - name: Build and Publish Web App
-#      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-$GITHUB_RUN_NUMBER
+    - name: Build and Publish Web App
+      run: msbuild src/skttl.HamApprover.sln /p:Configuration=Release /p:VersionSuffix=build-${{ github.run_number }}
     
 #    - name: Push to Myget
 #      run: nuget push src/skttl.HamApprover/bin/Release/*.nupkg $MYGET_API_KEY -Source https://api.nuget.org/v3/index.json
