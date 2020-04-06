@@ -31,7 +31,6 @@ jobs:
     
     - name: Push to NuGet
       run: nuget push src\skttl.HamApprover\bin\Release\*.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json -NoSymbols
-      continue-on-error: true
 
     - name: Upload assets to a Release
       uses: AButler/upload-release-assets@v2.0
